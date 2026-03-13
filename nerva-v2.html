@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NERVA Systems Operations — AI Business Operating System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Bebas+Neue&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060612;
+  --bg2: #08081a;
+  --surface: #0d0d22;
+  --card: #101028;
+  --card2: #13132e;
+  --border: rgba(99,120,255,0.12);
+  --border2: rgba(99,120,255,0.25);
+  --border3: rgba(99,120,255,0.45);
+  --blue: #4f7cff;
+  --blue2: #6b95ff;
+  --blue3: #8fb3ff;
+  --glow: rgba(79,124,255,0.18);
+  --glow2: rgba(79,124,255,0.08);
+  --text: #e8edff;
+  --muted: rgba(180,192,255,0.55);
+  --faint: rgba(180,192,255,0.2);
+  --green: #3dffa0;
+  --display: 'Bebas Neue', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+  --body: 'DM Sans', sans-serif;
+  --r: 16px;
+  --r2: 24px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--body);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── NOISE OVERLAY ── */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 500;
+  padding: 0 40px;
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(6,6,18,0.82);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo {
+  display: flex; align-items: center; gap: 10px;
+  text-decoration: none;
+}
+.logo-hex {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, rgba(79,124,255,0.2), rgba(79,124,255,0.05));
+  border: 1px solid var(--border3);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.logo-hex::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 40% 40%, rgba(79,124,255,0.4), transparent 60%);
+}
+.logo-hex svg { width: 16px; height: 16px; fill: none; stroke: var(--blue2); stroke-width: 1.5; position: relative; z-index: 1; }
+.logo-name { font-family: var(--display); font-size: 1.4rem; letter-spacing: 0.08em; color: var(--text); line-height: 1; }
+.logo-sub { font-family: var(--mono); font-size: 0.52rem; color: var(--muted); letter-spacing: 0.18em; text-transform: uppercase; display: block; }
+
+.nav-mid { display: flex; align-items: center; gap: 8px; }
+.nav-mid a {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--muted);
+  text-decoration: none;
+  padding: 7px 16px;
+  border-radius: 8px;
+  transition: all 0.2s;
+}
+.nav-mid a:hover { color: var(--text); background: rgba(79,124,255,0.08); }
+
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.btn-nav-ghost {
+  font-size: 0.82rem; font-weight: 500;
+  color: var(--muted); padding: 8px 18px;
+  border: 1px solid var(--border2);
+  border-radius: 8px; background: transparent;
+  cursor: pointer; text-decoration: none;
+  transition: all 0.2s;
+}
+.btn-nav-ghost:hover { color: var(--text); border-color: var(--border3); }
+.btn-nav-primary {
+  font-size: 0.82rem; font-weight: 600;
+  color: #fff; padding: 8px 20px;
+  border: none; border-radius: 8px;
+  background: linear-gradient(135deg, var(--blue), #3a5ce0);
+  cursor: pointer; text-decoration: none;
+  transition: all 0.2s;
+  box-shadow: 0 0 20px rgba(79,124,255,0.3);
+}
+.btn-nav-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 30px rgba(79,124,255,0.45); }
+
+/* ── HERO ── */
+.hero {
+  min-height: 100vh;
+  padding: 120px 40px 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* BG GLOW BLOBS */
+.hero::before {
+  content: '';
+  position: absolute;
+  width: 900px; height: 600px;
+  top: -100px; left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse, rgba(79,124,255,0.14) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(79,124,255,0.1);
+  border: 1px solid var(--border2);
+  border-radius: 100px;
+  padding: 6px 16px 6px 10px;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--blue2);
+  margin-bottom: 36px;
+  opacity: 0;
+  animation: riseIn 0.7s ease 0.1s forwards;
+}
+.eyebrow-dot {
+  width: 7px; height: 7px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--green);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.8)} }
+
+.hero-h1 {
+  font-family: var(--display);
+  font-size: clamp(4rem, 9vw, 8rem);
+  letter-spacing: 0.02em;
+  line-height: 0.93;
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: riseIn 0.7s ease 0.25s forwards;
+}
+.hero-h1 .accent {
+  background: linear-gradient(90deg, var(--blue2), var(--blue3));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 1.05rem;
+  font-weight: 400;
+  line-height: 1.75;
+  color: var(--muted);
+  max-width: 580px;
+  margin-bottom: 48px;
+  opacity: 0;
+  animation: riseIn 0.7s ease 0.4s forwards;
+}
+
+.hero-ctas {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 80px;
+  opacity: 0;
+  animation: riseIn 0.7s ease 0.55s forwards;
+}
+.btn-lg {
+  font-size: 0.9rem; font-weight: 600;
+  padding: 14px 32px;
+  border-radius: 12px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.22s;
+  display: inline-flex; align-items: center; gap: 8px;
+}
+.btn-lg.primary {
+  background: linear-gradient(135deg, var(--blue), #3a5ce0);
+  color: #fff; border: none;
+  box-shadow: 0 0 30px rgba(79,124,255,0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+.btn-lg.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 40px rgba(79,124,255,0.5); }
+.btn-lg.ghost {
+  background: rgba(79,124,255,0.07);
+  color: var(--blue3);
+  border: 1px solid var(--border2);
+}
+.btn-lg.ghost:hover { background: rgba(79,124,255,0.13); border-color: var(--border3); }
+
+/* HERO DASHBOARD MOCKUP */
+.hero-mockup {
+  width: 100%;
+  max-width: 900px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  overflow: hidden;
+  box-shadow:
+    0 0 0 1px rgba(79,124,255,0.05),
+    0 40px 120px rgba(0,0,0,0.8),
+    0 0 80px rgba(79,124,255,0.12);
+  opacity: 0;
+  animation: riseIn 0.9s ease 0.7s forwards;
+  position: relative;
+}
+.mockup-bar {
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex; align-items: center; gap: 8px;
+}
+.mockup-dot { width: 10px; height: 10px; border-radius: 50%; }
+.mockup-dot.r { background: #ff5f57; }
+.mockup-dot.y { background: #febc2e; }
+.mockup-dot.g { background: #28c840; }
+.mockup-url {
+  flex: 1;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 14px;
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  color: var(--muted);
+  text-align: center;
+}
+.mockup-body {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 360px;
+}
+.mockup-sidebar {
+  background: rgba(0,0,0,0.2);
+  border-right: 1px solid var(--border);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sidebar-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  cursor: default;
+  transition: all 0.2s;
+}
+.sidebar-item.active { background: rgba(79,124,255,0.12); color: var(--blue2); }
+.sidebar-item span { font-size: 0.9rem; }
+.sidebar-section {
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--faint);
+  padding: 14px 12px 6px;
+}
+.mockup-main { padding: 28px 32px; }
+.mock-greeting {
+  font-family: var(--display);
+  font-size: 1.4rem;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+.mock-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.mock-stat {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+}
+.mock-stat-val {
+  font-family: var(--display);
+  font-size: 1.8rem;
+  letter-spacing: 0.05em;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.mock-stat-val.up { color: var(--green); }
+.mock-stat-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.mock-chart {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px;
+  height: 120px;
+  position: relative;
+  overflow: hidden;
+}
+.mock-chart-label {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 5px;
+  height: 70px;
+}
+.bar {
+  flex: 1;
+  border-radius: 4px 4px 0 0;
+  background: linear-gradient(to top, rgba(79,124,255,0.6), rgba(79,124,255,0.2));
+  animation: barGrow 1.2s ease forwards;
+  transform-origin: bottom;
+  transform: scaleY(0);
+}
+@keyframes barGrow { to { transform: scaleY(1); } }
+
+/* ── SECTION SHARED ── */
+section { position: relative; }
+.container { max-width: 1160px; margin: 0 auto; padding: 0 40px; }
+.section-pad { padding: 100px 0; }
+
+.chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(79,124,255,0.09);
+  border: 1px solid var(--border2);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-family: var(--mono);
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--blue2);
+  margin-bottom: 20px;
+}
+.chip-dot { width: 5px; height: 5px; background: var(--blue2); border-radius: 50%; }
+
+h2.section-title {
+  font-family: var(--display);
+  font-size: clamp(2.4rem, 5vw, 4rem);
+  letter-spacing: 0.03em;
+  line-height: 0.97;
+  margin-bottom: 18px;
+}
+h2.section-title .acc { color: var(--blue2); }
+
+p.section-body {
+  font-size: 0.98rem;
+  color: var(--muted);
+  line-height: 1.8;
+  max-width: 520px;
+}
+
+/* ── LOGOS STRIP ── */
+.logos-strip {
+  padding: 40px 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  overflow: hidden;
+  position: relative;
+}
+.logos-strip::before, .logos-strip::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 120px;
+  z-index: 2;
+}
+.logos-strip::before { left: 0; background: linear-gradient(to right, var(--bg), transparent); }
+.logos-strip::after { right: 0; background: linear-gradient(to left, var(--bg), transparent); }
+.logos-track {
+  display: flex; gap: 0;
+  animation: slideLogo 25s linear infinite;
+  width: max-content;
+}
+.logo-item {
+  padding: 0 48px;
+  font-family: var(--mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--faint);
+  white-space: nowrap;
+  display: flex; align-items: center; gap: 10px;
+}
+.logo-item b { color: var(--muted); }
+@keyframes slideLogo { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ── FEATURES GRID ── */
+.features-intro {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: center;
+  margin-bottom: 80px;
+}
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+  background: var(--border);
+  border-radius: var(--r2);
+  overflow: hidden;
+}
+.feat-card {
+  background: var(--card);
+  padding: 36px 30px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+.feat-card:hover { background: var(--card2); }
+.feat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--blue), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.feat-card:hover::before { opacity: 1; }
+.feat-icon {
+  width: 44px; height: 44px;
+  background: rgba(79,124,255,0.1);
+  border: 1px solid var(--border2);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  margin-bottom: 20px;
+}
+.feat-name {
+  font-family: var(--display);
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.feat-desc {
+  font-size: 0.83rem;
+  color: var(--muted);
+  line-height: 1.7;
+}
+.feat-tag {
+  display: inline-block;
+  margin-top: 16px;
+  font-family: var(--mono);
+  font-size: 0.55rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--blue2);
+  background: rgba(79,124,255,0.08);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 3px 9px;
+}
+
+/* ── PROCESS DEEP-DIVE ── */
+.process { background: var(--bg2); }
+.process-header { text-align: center; margin-bottom: 80px; }
+.process-header .section-body { margin: 0 auto; text-align: center; }
+
+.process-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.process-step {
+  display: grid;
+  grid-template-columns: 80px 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+  padding: 48px 0;
+  border-bottom: 1px solid var(--border);
+  opacity: 0;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+  transform: translateY(24px);
+}
+.process-step.visible { opacity: 1; transform: translateY(0); }
+.process-step:last-child { border-bottom: none; }
+.step-num {
+  font-family: var(--display);
+  font-size: 3.5rem;
+  letter-spacing: 0.05em;
+  color: rgba(79,124,255,0.2);
+  line-height: 1;
+  padding-top: 4px;
+}
+.step-left h3 {
+  font-family: var(--display);
+  font-size: 1.8rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+.step-left p { font-size: 0.9rem; color: var(--muted); line-height: 1.75; }
+.step-right {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--r);
+  padding: 24px;
+}
+.step-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.flow-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+.flow-badge {
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.fb-trigger { background: rgba(61,255,160,0.1); color: var(--green); border: 1px solid rgba(61,255,160,0.2); }
+.fb-process { background: rgba(79,124,255,0.1); color: var(--blue2); border: 1px solid var(--border2); }
+.fb-action { background: rgba(255,193,79,0.1); color: #ffc14f; border: 1px solid rgba(255,193,79,0.2); }
+.fb-log { background: rgba(180,192,255,0.08); color: var(--faint); border: 1px solid var(--border); }
+.flow-arrow { color: var(--border3); font-size: 0.7rem; }
+
+/* ── TESTIMONIALS ── */
+.testimonials-section { background: var(--bg); }
+.testi-header { text-align: center; margin-bottom: 60px; }
+.testi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+.testi-card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 32px 28px;
+  position: relative;
+  overflow: hidden;
+  transition: border-color 0.3s, transform 0.3s;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease, border-color 0.3s;
+}
+.testi-card.visible { opacity: 1; transform: translateY(0); }
+.testi-card:hover { border-color: var(--border3); }
+.testi-card::before {
+  content: '"';
+  position: absolute;
+  top: -10px; right: 20px;
+  font-family: var(--display);
+  font-size: 8rem;
+  color: rgba(79,124,255,0.07);
+  line-height: 1;
+  pointer-events: none;
+}
+.testi-stars {
+  display: flex; gap: 3px; margin-bottom: 20px;
+}
+.testi-stars span { color: #ffc14f; font-size: 0.8rem; }
+.testi-body {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.75;
+  margin-bottom: 28px;
+  font-style: italic;
+}
+.testi-author {
+  display: flex; align-items: center; gap: 12px;
+}
+.author-avatar {
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--blue), #3a5ce0);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--display);
+  font-size: 1rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+.author-name { font-weight: 600; font-size: 0.88rem; color: var(--text); }
+.author-role { font-size: 0.75rem; color: var(--muted); margin-top: 1px; }
+
+/* ── STATS BANNER ── */
+.stats-banner {
+  background: linear-gradient(135deg, rgba(79,124,255,0.1), rgba(79,124,255,0.03));
+  border-top: 1px solid var(--border2);
+  border-bottom: 1px solid var(--border2);
+  padding: 64px 0;
+}
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 40px;
+  text-align: center;
+}
+.stat-num {
+  font-family: var(--display);
+  font-size: clamp(2.8rem, 5vw, 4.5rem);
+  letter-spacing: 0.03em;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 8px;
+}
+.stat-num span { color: var(--blue2); }
+.stat-label {
+  font-family: var(--mono);
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ── PRICING ── */
+.pricing-section { background: var(--bg2); }
+.pricing-header { text-align: center; margin-bottom: 64px; }
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.price-card {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 40px 32px;
+  position: relative;
+  transition: border-color 0.3s, transform 0.3s;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease, transform 0.6s ease, border-color 0.3s;
+}
+.price-card.visible { opacity: 1; transform: translateY(0); }
+.price-card:hover { border-color: var(--border3); transform: translateY(-4px); }
+.price-card.featured {
+  border-color: var(--blue);
+  background: linear-gradient(160deg, rgba(79,124,255,0.12), var(--card));
+  box-shadow: 0 0 50px rgba(79,124,255,0.12);
+}
+.price-featured-badge {
+  position: absolute;
+  top: -14px; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--blue), #3a5ce0);
+  color: #fff;
+  font-family: var(--mono);
+  font-size: 0.58rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  padding: 5px 20px;
+  border-radius: 100px;
+  white-space: nowrap;
+}
+.price-tier {
+  font-family: var(--mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--blue2);
+  margin-bottom: 16px;
+}
+.price-amount {
+  font-family: var(--display);
+  font-size: 3.4rem;
+  letter-spacing: 0.03em;
+  color: var(--text);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.price-amount sup { font-size: 1.2rem; vertical-align: super; }
+.price-amount sub { font-size: 1rem; color: var(--muted); }
+.price-desc { font-size: 0.82rem; color: var(--muted); margin-bottom: 28px; }
+.price-divider { height: 1px; background: var(--border); margin-bottom: 28px; }
+.price-feats { list-style: none; display: flex; flex-direction: column; gap: 12px; margin-bottom: 36px; }
+.price-feats li {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 0.85rem; color: var(--muted); line-height: 1.5;
+}
+.check { color: var(--green); flex-shrink: 0; margin-top: 2px; font-size: 0.8rem; }
+.price-btn {
+  width: 100%; padding: 13px;
+  border-radius: 10px;
+  font-size: 0.85rem; font-weight: 600;
+  cursor: pointer; transition: all 0.2s;
+  border: 1px solid var(--border2);
+  background: transparent; color: var(--blue2);
+}
+.price-btn:hover { background: rgba(79,124,255,0.1); border-color: var(--border3); }
+.price-card.featured .price-btn {
+  background: linear-gradient(135deg, var(--blue), #3a5ce0);
+  color: #fff; border: none;
+  box-shadow: 0 4px 20px rgba(79,124,255,0.3);
+}
+.price-card.featured .price-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 30px rgba(79,124,255,0.45); }
+
+/* ── CTA SECTION ── */
+.cta-section {
+  padding: 120px 0;
+  position: relative;
+  overflow: hidden;
+}
+.cta-section::before {
+  content: '';
+  position: absolute;
+  width: 700px; height: 400px;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(ellipse, rgba(79,124,255,0.15), transparent 70%);
+  pointer-events: none;
+}
+.cta-inner {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 32px;
+  padding: 80px 60px;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  position: relative;
+  overflow: hidden;
+}
+.cta-inner::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--blue), var(--blue2), transparent);
+}
+.cta-inner h2 {
+  font-family: var(--display);
+  font-size: clamp(2.4rem, 5vw, 4.2rem);
+  letter-spacing: 0.03em;
+  line-height: 0.97;
+  margin-bottom: 20px;
+}
+.cta-inner p { font-size: 1rem; color: var(--muted); line-height: 1.7; margin-bottom: 40px; max-width: 500px; margin-left: auto; margin-right: auto; }
+
+/* ── CONTACT ── */
+.contact-section { background: var(--bg2); }
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 80px;
+  align-items: start;
+}
+.contact-left { padding-top: 8px; }
+.contact-info-items { margin-top: 40px; display: flex; flex-direction: column; gap: 20px; }
+.ci-item {
+  display: flex; align-items: center; gap: 16px;
+  padding: 16px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: border-color 0.2s;
+}
+.ci-item:hover { border-color: var(--border2); }
+.ci-icon {
+  width: 40px; height: 40px; flex-shrink: 0;
+  background: rgba(79,124,255,0.1);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+}
+.ci-label { font-family: var(--mono); font-size: 0.57rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+.ci-val { font-size: 0.9rem; color: var(--text); margin-top: 2px; }
+.contact-form-wrap {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--r2);
+  padding: 40px 36px;
+}
+.form-title { font-family: var(--display); font-size: 1.5rem; letter-spacing: 0.04em; margin-bottom: 28px; }
+.form-fields { display: flex; flex-direction: column; gap: 16px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.fld { display: flex; flex-direction: column; gap: 7px; }
+.fld label { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); }
+.fld input, .fld select, .fld textarea {
+  background: var(--bg);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  color: var(--text);
+  padding: 12px 16px;
+  font-family: var(--body);
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  resize: none;
+}
+.fld input:focus, .fld select:focus, .fld textarea:focus {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(79,124,255,0.12);
+}
+.fld input::placeholder, .fld textarea::placeholder { color: var(--faint); }
+.fld select option { background: var(--bg); }
+.form-submit {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--blue), #3a5ce0);
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.22s;
+  box-shadow: 0 4px 20px rgba(79,124,255,0.25);
+  margin-top: 8px;
+}
+.form-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(79,124,255,0.4); }
+
+/* ── FOOTER ── */
+footer {
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  padding: 64px 0 40px;
+}
+.footer-top {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 1fr 1fr;
+  gap: 60px;
+  margin-bottom: 60px;
+}
+.footer-brand-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.7; margin-top: 16px; max-width: 260px; }
+.footer-col h4 { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--blue2); margin-bottom: 18px; }
+.footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+.footer-col ul a { font-size: 0.85rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+.footer-col ul a:hover { color: var(--text); }
+.footer-bottom {
+  display: flex; align-items: center; justify-content: space-between;
+  padding-top: 40px; border-top: 1px solid var(--border);
+}
+.footer-copy { font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.1em; color: var(--faint); }
+.footer-status {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.12em; color: var(--green);
+}
+.status-dot { width: 7px; height: 7px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); animation: pulse 2s ease-in-out infinite; }
+
+/* ── ANIMATIONS ── */
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* ── MOBILE ── */
+@media (max-width: 860px) {
+  nav { padding: 0 20px; }
+  .nav-mid { display: none; }
+  .hero { padding: 100px 20px 80px; }
+  .hero-h1 { font-size: 3.8rem; }
+  .features-intro { grid-template-columns: 1fr; gap: 40px; }
+  .features-grid { grid-template-columns: 1fr; }
+  .process-step { grid-template-columns: 50px 1fr; }
+  .step-right { display: none; }
+  .testi-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .pricing-grid { grid-template-columns: 1fr; max-width: 420px; }
+  .contact-grid { grid-template-columns: 1fr; }
+  .footer-top { grid-template-columns: 1fr 1fr; gap: 36px; }
+  .mockup-sidebar { display: none; }
+  .mockup-body { grid-template-columns: 1fr; }
+  .container { padding: 0 20px; }
+  .cta-inner { padding: 48px 24px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-hex">
+      <svg viewBox="0 0 24 24"><path d="M12 3l9 4.5v9L12 21l-9-4.5v-9L12 3z"/><path d="M12 3v18M3 7.5l9 4.5 9-4.5"/></svg>
+    </div>
+    <div>
+      <span class="logo-name">NERVA</span>
+      <span class="logo-sub">Systems Operations</span>
+    </div>
+  </a>
+  <div class="nav-mid">
+    <a href="#features">Features</a>
+    <a href="#process">How It Works</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <div class="nav-right">
+    <a href="#contact" class="btn-nav-ghost">Sign In</a>
+    <a href="#contact" class="btn-nav-primary">Get Started →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span class="eyebrow-dot"></span>
+    AI-Powered Business Operating System — Now Live
+  </div>
+  <h1 class="hero-h1">YOUR BUSINESS,<br><span class="accent">FULLY AUTOMATED.</span></h1>
+  <p class="hero-sub">NERVA replaces manual operations with intelligent automation. Inbound calls, lead capture, communications, ordering, and analytics — all running without you lifting a finger.</p>
+  <div class="hero-ctas">
+    <a href="#contact" class="btn-lg primary">Deploy NERVA <span>→</span></a>
+    <a href="#process" class="btn-lg ghost">See How It Works</a>
+  </div>
+
+  <!-- DASHBOARD MOCKUP -->
+  <div class="hero-mockup">
+    <div class="mockup-bar">
+      <div class="mockup-dot r"></div>
+      <div class="mockup-dot y"></div>
+      <div class="mockup-dot g"></div>
+      <div class="mockup-url">app.nervasystems.io/dashboard</div>
+    </div>
+    <div class="mockup-body">
+      <div class="mockup-sidebar">
+        <div class="sidebar-section">Navigation</div>
+        <div class="sidebar-item active"><span>📊</span> Dashboard</div>
+        <div class="sidebar-item"><span>🎙️</span> Voice AI</div>
+        <div class="sidebar-item"><span>📲</span> Communications</div>
+        <div class="sidebar-item"><span>⚙️</span> Automations</div>
+        <div class="sidebar-section">Analytics</div>
+        <div class="sidebar-item"><span>📈</span> KPI Reports</div>
+        <div class="sidebar-item"><span>🔗</span> Integrations</div>
+        <div class="sidebar-section">Settings</div>
+        <div class="sidebar-item"><span>🏢</span> My Business</div>
+      </div>
+      <div class="mockup-main">
+        <div class="mock-greeting">Good morning, NERVA is running ✦</div>
+        <div class="mock-stats">
+          <div class="mock-stat">
+            <div class="mock-stat-val up">98%</div>
+            <div class="mock-stat-label">Calls Automated</div>
+          </div>
+          <div class="mock-stat">
+            <div class="mock-stat-val">247</div>
+            <div class="mock-stat-label">Leads Captured</div>
+          </div>
+          <div class="mock-stat">
+            <div class="mock-stat-val up">3.2×</div>
+            <div class="mock-stat-label">Revenue Lift</div>
+          </div>
+        </div>
+        <div class="mock-chart">
+          <div class="mock-chart-label">Weekly Automation Volume</div>
+          <div class="chart-bars">
+            <div class="bar" style="height:45%;animation-delay:0.1s"></div>
+            <div class="bar" style="height:62%;animation-delay:0.15s"></div>
+            <div class="bar" style="height:38%;animation-delay:0.2s"></div>
+            <div class="bar" style="height:75%;animation-delay:0.25s"></div>
+            <div class="bar" style="height:55%;animation-delay:0.3s"></div>
+            <div class="bar" style="height:90%;animation-delay:0.35s"></div>
+            <div class="bar" style="height:70%;animation-delay:0.4s"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGOS STRIP -->
+<div class="logos-strip">
+  <div class="logos-track">
+    <div class="logo-item"><b>Twilio</b> Voice & SMS</div>
+    <div class="logo-item"><b>Supabase</b> Data Layer</div>
+    <div class="logo-item"><b>OpenAI</b> AI Engine</div>
+    <div class="logo-item"><b>Stripe</b> Payments</div>
+    <div class="logo-item"><b>WhatsApp</b> Messaging</div>
+    <div class="logo-item"><b>Square</b> POS</div>
+    <div class="logo-item"><b>Zapier</b> Workflows</div>
+    <div class="logo-item"><b>Salesforce</b> CRM</div>
+    <div class="logo-item"><b>Twilio</b> Voice & SMS</div>
+    <div class="logo-item"><b>Supabase</b> Data Layer</div>
+    <div class="logo-item"><b>OpenAI</b> AI Engine</div>
+    <div class="logo-item"><b>Stripe</b> Payments</div>
+    <div class="logo-item"><b>WhatsApp</b> Messaging</div>
+    <div class="logo-item"><b>Square</b> POS</div>
+    <div class="logo-item"><b>Zapier</b> Workflows</div>
+    <div class="logo-item"><b>Salesforce</b> CRM</div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section-pad" id="features">
+  <div class="container">
+    <div class="features-intro reveal">
+      <div>
+        <div class="chip"><span class="chip-dot"></span>System Modules</div>
+        <h2 class="section-title">One system.<br><span class="acc">Every module.</span></h2>
+        <p class="section-body">NERVA is built modular from the ground up. Deploy a single module or the full suite. Every component integrates natively — no glue code, no fragile connectors.</p>
+      </div>
+      <div style="background: var(--card); border: 1px solid var(--border2); border-radius: var(--r2); padding: 28px;">
+        <div style="font-family: var(--mono); font-size: 0.6rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px;">Event pipeline — live</div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 0.82rem; color: var(--muted);">
+            <div style="width: 32px; height: 32px; background: rgba(61,255,160,0.1); border: 1px solid rgba(61,255,160,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">📞</div>
+            Inbound call detected → Voice AI activated
+          </div>
+          <div style="width: 1px; height: 16px; background: var(--border2); margin-left: 15px;"></div>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 0.82rem; color: var(--muted);">
+            <div style="width: 32px; height: 32px; background: rgba(79,124,255,0.1); border: 1px solid var(--border2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">🧠</div>
+            Intent classified → Lead scored 94/100
+          </div>
+          <div style="width: 1px; height: 16px; background: var(--border2); margin-left: 15px;"></div>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 0.82rem; color: var(--muted);">
+            <div style="width: 32px; height: 32px; background: rgba(79,124,255,0.1); border: 1px solid var(--border2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">📲</div>
+            Follow-up SMS dispatched → CRM updated
+          </div>
+          <div style="width: 1px; height: 16px; background: var(--border2); margin-left: 15px;"></div>
+          <div style="display: flex; align-items: center; gap: 10px; font-size: 0.82rem; color: var(--muted);">
+            <div style="width: 32px; height: 32px; background: rgba(61,255,160,0.1); border: 1px solid rgba(61,255,160,0.2); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; flex-shrink: 0;">✅</div>
+            <span style="color: var(--green);">KPI dashboard updated — cycle complete</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="features-grid">
+      <div class="feat-card reveal">
+        <div class="feat-icon">🎙️</div>
+        <div class="feat-name">Voice AI Layer</div>
+        <p class="feat-desc">Handles every inbound call autonomously. Books appointments, captures intent, qualifies leads, and escalates only when it matters.</p>
+        <span class="feat-tag">Active</span>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">📲</div>
+        <div class="feat-name">Communication Layer</div>
+        <p class="feat-desc">Unified SMS, WhatsApp, and Email automation. Trigger-based sequences and broadcast campaigns that run themselves.</p>
+        <span class="feat-tag">Active</span>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">⚙️</div>
+        <div class="feat-name">Automation Engine</div>
+        <p class="feat-desc">Event-driven workflow orchestration with full traceability. Every trigger, action, and log is visible. Zero black-box logic.</p>
+        <span class="feat-tag">Core</span>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">🗄️</div>
+        <div class="feat-name">Data Layer</div>
+        <p class="feat-desc">Postgres-backed data architecture. You own your data — not a third-party silo. Built for analytics and long-term business intelligence.</p>
+        <span class="feat-tag">Core</span>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">🔌</div>
+        <div class="feat-name">Integration Layer</div>
+        <p class="feat-desc">Native connectors for POS, CRM, payment processors, and APIs. Webhooks that trigger across your entire operation in real time.</p>
+        <span class="feat-tag">Active</span>
+      </div>
+      <div class="feat-card reveal">
+        <div class="feat-icon">📈</div>
+        <div class="feat-name">KPI Dashboard</div>
+        <p class="feat-desc">Real-time business intelligence. Revenue, leads, call performance, and operations — built for owners, not analysts.</p>
+        <span class="feat-tag">Active</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- STATS BANNER -->
+<div class="stats-banner">
+  <div class="container">
+    <div class="stats-grid">
+      <div class="reveal" style="text-align:center">
+        <div class="stat-num">98<span>%</span></div>
+        <div class="stat-label">Calls Automated</div>
+      </div>
+      <div class="reveal" style="text-align:center">
+        <div class="stat-num">3<span>×</span></div>
+        <div class="stat-label">Lead Conversion Rate</div>
+      </div>
+      <div class="reveal" style="text-align:center">
+        <div class="stat-num">72<span>h</span></div>
+        <div class="stat-label">Average Deploy Time</div>
+      </div>
+      <div class="reveal" style="text-align:center">
+        <div class="stat-num">0</div>
+        <div class="stat-label">Silent Failures</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROCESS DEEP DIVE -->
+<section class="process section-pad" id="process">
+  <div class="container">
+    <div class="process-header reveal">
+      <div class="chip" style="display:inline-flex; margin-bottom: 16px;"><span class="chip-dot"></span>How NERVA Works</div>
+      <h2 class="section-title">Every action is an event.<br><span class="acc">Every event is traceable.</span></h2>
+      <p class="section-body">NERVA runs on a strict event-driven pipeline. Nothing is silent. Nothing is manual. Each step is logged, validated, and reported in real time.</p>
+    </div>
+    <div class="process-steps">
+
+      <div class="process-step">
+        <div class="step-num">01</div>
+        <div class="step-left">
+          <h3>Event Triggered</h3>
+          <p>Every workflow starts with a trigger — an inbound call, a form submission, a webhook from your POS, or a scheduled event. NERVA listens 24/7 across every channel you operate on.</p>
+        </div>
+        <div class="step-right">
+          <div class="step-flow">
+            <div class="flow-row"><div class="flow-badge fb-trigger">Inbound Call</div><span class="flow-arrow">→</span> Voice AI activated</div>
+            <div class="flow-row"><div class="flow-badge fb-trigger">Form Submit</div><span class="flow-arrow">→</span> Lead pipeline started</div>
+            <div class="flow-row"><div class="flow-badge fb-trigger">POS Webhook</div><span class="flow-arrow">→</span> Order engine triggered</div>
+            <div class="flow-row"><div class="flow-badge fb-trigger">Scheduled</div><span class="flow-arrow">→</span> Broadcast campaign fired</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-num">02</div>
+        <div class="step-left">
+          <h3>Validated & Classified</h3>
+          <p>Before any action is taken, NERVA validates the incoming data for integrity, deduplication, and routing logic. AI classifies intent and assigns a priority score in milliseconds.</p>
+        </div>
+        <div class="step-right">
+          <div class="step-flow">
+            <div class="flow-row"><div class="flow-badge fb-process">Data Check</div><span class="flow-arrow">→</span> Schema validation passed</div>
+            <div class="flow-row"><div class="flow-badge fb-process">Intent AI</div><span class="flow-arrow">→</span> Classified: High-intent lead</div>
+            <div class="flow-row"><div class="flow-badge fb-process">Lead Score</div><span class="flow-arrow">→</span> 94 / 100 — route to priority</div>
+            <div class="flow-row"><div class="flow-badge fb-process">Dedup</div><span class="flow-arrow">→</span> New contact confirmed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-num">03</div>
+        <div class="step-left">
+          <h3>Automated Action</h3>
+          <p>The right action fires automatically — a follow-up SMS, a booking confirmation, a CRM update, an order acknowledgment. No human required. No delay. No mistake.</p>
+        </div>
+        <div class="step-right">
+          <div class="step-flow">
+            <div class="flow-row"><div class="flow-badge fb-action">SMS Sent</div><span class="flow-arrow">→</span> "Thanks for calling, here's your link"</div>
+            <div class="flow-row"><div class="flow-badge fb-action">CRM Updated</div><span class="flow-arrow">→</span> Contact + notes + score written</div>
+            <div class="flow-row"><div class="flow-badge fb-action">Calendar</div><span class="flow-arrow">→</span> Appointment blocked & confirmed</div>
+            <div class="flow-row"><div class="flow-badge fb-action">Notification</div><span class="flow-arrow">→</span> Owner alerted if human needed</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="process-step">
+        <div class="step-num">04</div>
+        <div class="step-left">
+          <h3>Logged & Reported</h3>
+          <p>Every event, action, and outcome is written to your database in real time. Your KPI dashboard updates automatically. You always know exactly what happened and when.</p>
+        </div>
+        <div class="step-right">
+          <div class="step-flow">
+            <div class="flow-row"><div class="flow-badge fb-log">Audit Log</div><span class="flow-arrow">→</span> Full event trace stored</div>
+            <div class="flow-row"><div class="flow-badge fb-log">KPI Update</div><span class="flow-arrow">→</span> Dashboard refreshed live</div>
+            <div class="flow-row"><div class="flow-badge fb-log">Analytics</div><span class="flow-arrow">→</span> Revenue attribution updated</div>
+            <div class="flow-row"><div class="flow-badge fb-log">Report</div><span class="flow-arrow">→</span> Weekly summary queued</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials-section section-pad">
+  <div class="container">
+    <div class="testi-header reveal">
+      <div class="chip" style="display:inline-flex; margin-bottom: 16px;"><span class="chip-dot"></span>Client Results</div>
+      <h2 class="section-title">Built for businesses<br><span class="acc">that refuse to slow down.</span></h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi-card reveal">
+        <div class="testi-stars">
+          <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+        </div>
+        <p class="testi-body">NERVA handles every inbound call for our three locations. We used to miss 30% of calls during peak hours. Now we miss zero. The Voice AI sounds indistinguishable from a real receptionist.</p>
+        <div class="testi-author">
+          <div class="author-avatar">MR</div>
+          <div>
+            <div class="author-name">Marco Reyes</div>
+            <div class="author-role">Owner, Fuego Restaurant Group · 3 Locations</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal" style="transition-delay: 0.1s">
+        <div class="testi-stars">
+          <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+        </div>
+        <p class="testi-body">We went from manually following up with leads to a fully automated sequence. Lead conversion is up 280% in 60 days. NERVA paid for itself in the first week.</p>
+        <div class="testi-author">
+          <div class="author-avatar">SL</div>
+          <div>
+            <div class="author-name">Sarah Lim</div>
+            <div class="author-role">Director, Apex Realty · 12 Agents</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card reveal" style="transition-delay: 0.2s">
+        <div class="testi-stars">
+          <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+        </div>
+        <p class="testi-body">The KPI dashboard alone is worth it. I check my phone once a day and know exactly where my business stands. NERVA is the operating system our clinic never knew it needed.</p>
+        <div class="testi-author">
+          <div class="author-avatar">DK</div>
+          <div>
+            <div class="author-name">Dr. Darius Khan</div>
+            <div class="author-role">Founder, Vitality Medical Centre</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section section-pad" id="pricing">
+  <div class="container">
+    <div class="pricing-header reveal">
+      <div class="chip" style="display:inline-flex; margin-bottom: 16px;"><span class="chip-dot"></span>Deployment Tiers</div>
+      <h2 class="section-title">Start lean.<br><span class="acc">Scale without limits.</span></h2>
+      <p class="section-body" style="margin: 0 auto; text-align: center;">Every tier includes full onboarding, configuration, and dedicated support. No hidden costs.</p>
+    </div>
+    <div class="pricing-grid">
+      <div class="price-card reveal">
+        <div class="price-tier">Starter</div>
+        <div class="price-amount"><sup>$</sup>297<sub>/mo</sub></div>
+        <p class="price-desc">Up to 3 modules. Perfect for single-location businesses.</p>
+        <div class="price-divider"></div>
+        <ul class="price-feats">
+          <li><span class="check">✓</span> Voice AI — inbound call handling</li>
+          <li><span class="check">✓</span> Lead capture & basic routing</li>
+          <li><span class="check">✓</span> SMS & WhatsApp automation</li>
+          <li><span class="check">✓</span> KPI dashboard (read-only)</li>
+          <li><span class="check">✓</span> Email support</li>
+        </ul>
+        <button class="price-btn">Get Started</button>
+      </div>
+      <div class="price-card featured reveal" style="transition-delay:0.1s">
+        <div class="price-featured-badge">Most Popular</div>
+        <div class="price-tier">Growth</div>
+        <div class="price-amount"><sup>$</sup>697<sub>/mo</sub></div>
+        <p class="price-desc">Full module suite. For growing businesses that run fast.</p>
+        <div class="price-divider"></div>
+        <ul class="price-feats">
+          <li><span class="check">✓</span> Everything in Starter</li>
+          <li><span class="check">✓</span> Full automation engine</li>
+          <li><span class="check">✓</span> POS + CRM integrations</li>
+          <li><span class="check">✓</span> Order management system</li>
+          <li><span class="check">✓</span> Live KPI dashboard</li>
+          <li><span class="check">✓</span> Dedicated account manager</li>
+        </ul>
+        <button class="price-btn">Deploy Now</button>
+      </div>
+      <div class="price-card reveal" style="transition-delay:0.2s">
+        <div class="price-tier">Enterprise</div>
+        <div class="price-amount" style="font-size:2.4rem; padding-top: 6px;">Custom</div>
+        <p class="price-desc">Multi-location, white-label, SaaS. Built for scale.</p>
+        <div class="price-divider"></div>
+        <ul class="price-feats">
+          <li><span class="check">✓</span> Everything in Growth</li>
+          <li><span class="check">✓</span> Multi-tenant deployment</li>
+          <li><span class="check">✓</span> Custom module development</li>
+          <li><span class="check">✓</span> White-label dashboard</li>
+          <li><span class="check">✓</span> SLA guarantee</li>
+          <li><span class="check">✓</span> On-site onboarding</li>
+        </ul>
+        <button class="price-btn">Contact Sales</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA SECTION -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-inner reveal">
+      <div class="chip" style="display:inline-flex; margin-bottom: 24px;"><span class="chip-dot"></span>Start Today</div>
+      <h2>Ready to automate<br><span style="color: var(--blue2);">your operations?</span></h2>
+      <p>Tell us about your business and we'll map out a deployment plan within 24 hours. No fluff. No lengthy sales process. Just architecture and execution.</p>
+      <div style="display:flex; align-items:center; justify-content:center; gap:14px; flex-wrap:wrap;">
+        <a href="#contact" class="btn-lg primary">Request Deployment Plan →</a>
+        <a href="#features" class="btn-lg ghost">Explore All Modules</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section section-pad" id="contact">
+  <div class="container">
+    <div class="contact-grid">
+      <div class="contact-left reveal">
+        <div class="chip"><span class="chip-dot"></span>Get In Touch</div>
+        <h2 class="section-title">Let's build your<br><span class="acc">automation stack.</span></h2>
+        <p class="section-body">Fill out the form and we'll respond within 24 hours with a tailored deployment plan. We don't do generic demos — we map your exact operations.</p>
+        <div class="contact-info-items">
+          <div class="ci-item">
+            <div class="ci-icon">📧</div>
+            <div>
+              <div class="ci-label">Email</div>
+              <div class="ci-val">operations@nervasystems.io</div>
+            </div>
+          </div>
+          <div class="ci-item">
+            <div class="ci-icon">💬</div>
+            <div>
+              <div class="ci-label">WhatsApp</div>
+              <div class="ci-val">Available on request</div>
+            </div>
+          </div>
+          <div class="ci-item">
+            <div class="ci-icon">⏱️</div>
+            <div>
+              <div class="ci-label">Response Time</div>
+              <div class="ci-val">Under 24 hours — guaranteed</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="contact-form-wrap reveal">
+        <div class="form-title">Request Deployment Plan</div>
+        <div class="form-fields">
+          <div class="form-row">
+            <div class="fld"><label>First Name</label><input type="text" placeholder="John"></div>
+            <div class="fld"><label>Last Name</label><input type="text" placeholder="Smith"></div>
+          </div>
+          <div class="fld"><label>Business Email</label><input type="email" placeholder="you@company.com"></div>
+          <div class="fld"><label>Business Name</label><input type="text" placeholder="Your company"></div>
+          <div class="fld">
+            <label>Industry</label>
+            <select>
+              <option value="">Select your industry</option>
+              <option>Restaurant / QSR</option>
+              <option>Healthcare / Clinic</option>
+              <option>Real Estate</option>
+              <option>Automotive / Service</option>
+              <option>Retail</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div class="fld">
+            <label>What do you want to automate?</label>
+            <textarea rows="4" placeholder="Describe your biggest operational bottleneck — calls, leads, orders, follow-ups..."></textarea>
+          </div>
+          <button class="form-submit" id="submitBtn">Send Deployment Request →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-top">
+      <div>
+        <a href="#" class="logo">
+          <div class="logo-hex">
+            <svg viewBox="0 0 24 24"><path d="M12 3l9 4.5v9L12 21l-9-4.5v-9L12 3z"/><path d="M12 3v18M3 7.5l9 4.5 9-4.5"/></svg>
+          </div>
+          <div>
+            <span class="logo-name">NERVA</span>
+            <span class="logo-sub">Systems Operations</span>
+          </div>
+        </a>
+        <p class="footer-brand-desc">AI-powered business operating system for SMBs that refuse to operate below their potential.</p>
+      </div>
+      <div class="footer-col">
+        <h4>System</h4>
+        <ul>
+          <li><a href="#features">Modules</a></li>
+          <li><a href="#process">Architecture</a></li>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#contact">Deploy</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Industries</h4>
+        <ul>
+          <li><a href="#">Restaurants</a></li>
+          <li><a href="#">Healthcare</a></li>
+          <li><a href="#">Real Estate</a></li>
+          <li><a href="#">Automotive</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a href="#">About NERVA</a></li>
+          <li><a href="#">Case Studies</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span class="footer-copy">© 2025 NERVA Systems Operations. All rights reserved.</span>
+      <div class="footer-status"><div class="status-dot"></div>All Systems Operational</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// SCROLL REVEAL
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+    }
+  });
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal, .process-step, .testi-card, .price-card').forEach(el => observer.observe(el));
+
+// SMOOTH SCROLL
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const t = document.querySelector(a.getAttribute('href'));
+    if (t) { e.preventDefault(); t.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  });
+});
+
+// FORM SUBMIT
+document.getElementById('submitBtn')?.addEventListener('click', function() {
+  this.textContent = '✓ Request Received — We\'ll reach out within 24h';
+  this.style.background = 'linear-gradient(135deg, #3dffa0, #1fd68b)';
+  this.style.color = '#060612';
+  setTimeout(() => {
+    this.textContent = 'Send Deployment Request →';
+    this.style.background = '';
+    this.style.color = '';
+  }, 4000);
+});
+
+// NAV ACTIVE ON SCROLL
+window.addEventListener('scroll', () => {
+  const nav = document.querySelector('nav');
+  if (window.scrollY > 60) {
+    nav.style.borderBottomColor = 'rgba(99,120,255,0.2)';
+  } else {
+    nav.style.borderBottomColor = 'rgba(99,120,255,0.12)';
+  }
+});
+</script>
+</body>
+</html>
